@@ -1,7 +1,7 @@
 .vscode
 build/
 *.mod
-p*
+p*-phi*
 *.py
 *.sif
 *.def
