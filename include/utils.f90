@@ -52,8 +52,6 @@ contains
         ! Leer todas las variables
         read(u, *) phi
         read(u, *) ktemp
-        read(u, *) pressure
-        read(u, *) dispvol
         read(u, *) np
         read(u, *) nvq
         read(u, *) mr

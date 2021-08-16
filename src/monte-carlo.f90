@@ -11,13 +11,12 @@ program main
     real(dp), allocatable :: x(:), y(:), z(:)
     real(dp), allocatable :: r(:), g(:), q(:), s(:)
     real(dp) :: del = 0.1_dp, ener, dv, dt2, dphi, sumq, qs
-    real(dp) :: rng, d, dr, dq, rhoave, volratio, rhoaverage
+    real(dp) :: rng, d, dr, dq
     integer :: nattemp = 0
     integer :: nacc = 1, nacco, nav, i, j, ncq = 0
     integer :: ng = 0, naveg = 0
     integer, parameter :: limT = 2000000
-    integer :: limG, u, nptvol, nptvolfreq, vacc, vattemp
-    integer :: vacco
+    integer :: limG, u
     ! Condiciones periódicas a la frontera
     integer :: pbc = 1
 
@@ -32,18 +31,11 @@ program main
     d = (1.0_dp/rho)**(1.0_dp/3.0_dp)
     dr = rc / mr
     dq = pi / rc
-    nptvolfreq = np * 2
-    rhoave = 0.0_dp
-    nptvol = 1
-    vacc = 1
-    vattemp = 0
 
     print*, 'rc = ', rc
     print*, 'dr = ', dr
     print*, 'dq = ', dq, 'boxl =', boxl
     print*, 'Mean interparticle distance: ', d
-    print*, 'Pressure = ', pressure
-    print*, 'Reference density = ', rho
 
     ! Allocate memory for arrays
     allocate(x(np), y(np), z(np))
@@ -87,12 +79,6 @@ program main
     do i = 1, limT
         call mcmove(x, y, z, ener, nattemp, nacc, del)
         call adjust(nattemp, nacc, del, 0.5_dp)
-
-        ! Adjust the box if asked for
-        if ((nptvol == 1) .and. (mod(i, nptvolfreq)) == 0) then
-            call mcvolume(x, y, z, rhoave, ener, vattemp, vacc)
-            call adjust(vattemp, vacc, dispvol, 0.2_dp)
-        end if
         
         if (mod(i, 100) == 0) then
             write(u, '(2f15.7)') i*1._dp, ener/np
@@ -101,9 +87,6 @@ program main
         if (mod(i, 500000) == 0) then
             print*, 'MC Step, Particle disp, Energy / N'
             print*, i, del, ener/np
-            print*, 'MC Step, Density average, box size, Vol ratio, Vol disp'
-            volratio = real(vacc, dp) / real(vattemp, dp)
-            print*, i, rhoave / vacc, boxl, volratio, dispvol
         end if
     end do
 
@@ -118,16 +101,7 @@ program main
 
     !MC cycle to calculate the g(r)
     nacco = nacc
-    vacco = vacc
-    rho = rhoave / vacc
-    boxl = (np / rho)**(1.0_dp/3.0_dp)
-    rc = boxl * 0.5_dp
-    rhoave = 0.0_dp
-    vacc = 1
-    vattemp = 0
     g = 0.0_dp
-
-    open(newunit = u, file = 'density.dat', status = 'unknown')
 
     do i = 1, limG
         call average(x, y, z, g, s, ener, nattemp, nacc, ng, naveg, del, dr, pbc)
@@ -143,19 +117,12 @@ program main
             print*, i, 'calculating g(r) and S(q)'
             print*, 'MC Step, Particle disp, Energy / N'
             print*, i, del, ener/np
-            print*, 'MC Step, Density average, box size, Vol ratio, Vol disp'
-            volratio = real(vacc, dp) / real(vattemp, dp)
-            rhoaverage = rhoave / real(vacc, dp)
-            print*, i, rhoaverage, boxl, volratio, dispvol
-            write(u, *) i, rhoaverage
         end if
     end do
 
-    close(u)
     nav = nacc-nacco
 
     print*,'Average number for energy: ', nav
-    print*,'Average value of density: ', rhoave / (vacc + vacco)
     print*,'Average number for g(r): ', naveg
 
     ! This is the radial distribution function

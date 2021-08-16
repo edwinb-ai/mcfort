@@ -6,7 +6,7 @@ module movement
 
     implicit none
 
-    public mcmove, adjust, average, mcvolume
+    public mcmove, adjust, average
 contains
     ! This subroutine displace the system to a new configuration
     subroutine mcmove(x, y, z, ener, nattemp, nacc, del)
@@ -99,7 +99,7 @@ contains
     dener = enern-enero
 
     call random_number(rng)
-    if (rng <= exp(-dener / ktemp)) then
+    if (rng < exp(-dener / ktemp)) then
         ener = ener + dener
         nacc = nacc + 1
         ng = ng + 1
@@ -115,68 +115,6 @@ contains
         z(no) = zo
     end if
     end subroutine average
-
-    subroutine mcvolume(x, y, z, rhoave, ener, vattemp, vacc)
-    real(dp), intent(in) :: ener
-    real(dp), intent(inout) :: rhoave
-    integer, intent(inout) :: vattemp, vacc
-    real(dp), intent(inout) :: x(:), y(:), z(:)
-
-    ! Local variables
-    integer :: i
-    real(dp) :: enero, enern, dener 
-    real(dp) :: rng, volold, volnew, lnvolold, lnvolnew
-    real(dp) :: adjust, boxlnew, rhold, denpt
-
-    ! Count as a movement always
-    vattemp = vattemp + 1
-
-    ! Estimate the new volume
-    volold = boxl**3
-    lnvolold = log(volold)
-    call random_number(rng)
-    lnvolnew = lnvolold + (dispvol * (rng - 0.5_dp))
-    volnew = exp(lnvolnew)
-    boxlnew = volnew**(1.0_dp / 3.0_dp)
-
-    ! Adjust the particles to the new box
-    adjust = boxlnew / boxl
-    boxl = boxlnew
-    rc = boxl / 2.0_dp
-    do i = 1, np
-        x(i) = x(i) * adjust
-        y(i) = y(i) * adjust
-        z(i) = z(i) * adjust
-    end do
-
-    ! Compute the new density
-    rhold = rho
-    rho = np / volnew
-
-    ! Compute the energy after adjusting the box
-    call energy(x, y, z, enern)
-    dener = enern - ener
-    ! Compute the full exponential term for the NPT ensemble
-    denpt = pressure * (volnew - volold) + dener
-    denpt = denpt - (np + 1) * (lnvolnew - lnvolold) * ktemp
-
-    ! Apply Metropolis criteria
-    call random_number(rng)
-    if (rng <= exp(-denpt / ktemp)) then
-        rhoave = rhoave + rho
-        vacc = vacc + 1
-    else
-        do i = 1, np
-            x(i) = x(i) / adjust
-            y(i) = y(i) / adjust
-            z(i) = z(i) / adjust
-        end do
-
-        boxl = volold**(1.0_dp / 3.0_dp)
-        rho = rhold
-        rc = boxl / 2.0_dp
-    end if
-    end subroutine mcvolume
 
     ! This subroutine adjusts the displacement of particles
     subroutine adjust(nattemp, nacc, del, tol)

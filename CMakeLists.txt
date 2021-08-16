@@ -6,8 +6,7 @@ project(mcfort)
 enable_language(Fortran)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    set(dialect "-ffree-form -std=f2008 -g -fimplicit-none -fPIC -O3 -march=native -funroll-loops")
-    set(bounds "-fbounds-check")
+    set(dialect "-Wall -Wextra -Wimplicit-interface -fPIC -Werror -fmax-errors=1 -Ofast -march=native -funroll-loops")
 endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
     set(dialect "-stand f08 -free -implicitnone")
@@ -20,6 +19,13 @@ endif()
 
 set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${bounds}")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${dialect}")
+
+# Look for and add the OpenMP flags
+find_package(OpenMP REQUIRED)
+if(OPENMP_FOUND)
+message("OPENMP FOUND")
+set(CMAKE_Fortran_FLAGS "${OpenMP_Fortran_FLAGS} ${dialect}")
+endif()
 
 #
 # Compilar
