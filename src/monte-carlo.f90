@@ -10,12 +10,12 @@ program main
     ! Local variables, note that somes variables are initialized
     real(dp), allocatable :: x(:), y(:), z(:)
     real(dp), allocatable :: r(:), g(:), q(:), s(:)
-    real(dp) :: del = 0.1_dp, ener, dv, dt2, dphi, sumq, qs
+    real(dp) :: del = 0.1_dp, ener, dv, dt2, dphi, qs
     real(dp) :: rng, d, dr, dq
     integer :: nattemp = 0
     integer :: nacc = 1, nacco, nav, i, j, ncq = 0
     integer :: ng = 0, naveg = 0
-    integer, parameter :: limT = 2000000
+    integer, parameter :: limT = 2e8
     integer :: limG, u
     ! Condiciones periódicas a la frontera
     integer :: pbc = 1
@@ -36,6 +36,7 @@ program main
     print*, 'dr = ', dr
     print*, 'dq = ', dq, 'boxl =', boxl
     print*, 'Mean interparticle distance: ', d
+    print*, rho, phi
 
     ! Allocate memory for arrays
     allocate(x(np), y(np), z(np))
@@ -106,12 +107,6 @@ program main
     do i = 1, limG
         call average(x, y, z, g, s, ener, nattemp, nacc, ng, naveg, del, dr, pbc)
         call adjust(nattemp, nacc, del, 0.5_dp)
-        
-        ! Adjust the box if asked for
-        if ((nptvol == 1) .and. (mod(i, nptvolfreq)) == 0) then
-            call mcvolume(x, y, z, rhoave, ener, vattemp, vacc)
-            call adjust(vattemp, vacc, dispvol, 0.2_dp)
-        end if
 
         if (mod(i, 250000) == 0) then
             print*, i, 'calculating g(r) and S(q)'
