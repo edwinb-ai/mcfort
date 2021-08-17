@@ -108,7 +108,7 @@ program main
         call average(x, y, z, g, s, ener, nattemp, nacc, ng, naveg, del, dr, pbc)
         call adjust(nattemp, nacc, del, 0.5_dp)
 
-        if (mod(i, 250000) == 0) then
+        if (mod(i, 2500) == 0) then
             print*, i, 'calculating g(r) and S(q)'
             print*, 'MC Step, Particle disp, Energy / N'
             print*, i, del, ener/np
