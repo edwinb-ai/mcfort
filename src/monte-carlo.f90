@@ -15,7 +15,7 @@ program main
     integer :: nattemp = 0
     integer :: nacc = 1, nacco, nav, i, j, ncq = 0
     integer :: ng = 0, naveg = 0
-    integer, parameter :: limT = 2e8
+    integer, parameter :: limT = 1e9
     integer :: limG, u
     ! Condiciones periódicas a la frontera
     integer :: pbc = 1
@@ -81,7 +81,7 @@ program main
         call mcmove(x, y, z, ener, nattemp, nacc, del)
         call adjust(nattemp, nacc, del, 0.5_dp)
         
-        if (mod(i, 100) == 0) then
+        if (mod(i, 1000) == 0) then
             write(u, '(2f15.7)') i*1._dp, ener/np
         end if
         
@@ -106,7 +106,7 @@ program main
 
     do i = 1, limG
         call average(x, y, z, g, s, ener, nattemp, nacc, ng, naveg, del, dr, pbc)
-        call adjust(nattemp, nacc, del, 0.5_dp)
+        call adjust(nattemp, nacc, del, 0.35_dp)
 
         if (mod(i, 2500) == 0) then
             print*, i, 'calculating g(r) and S(q)'
