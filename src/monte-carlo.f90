@@ -79,7 +79,7 @@ program main
     open(newunit=u, file = 'energy.dat', status = 'unknown')
     do i = 1, limT
         call mcmove(x, y, z, ener, nattemp, nacc, del)
-        call adjust(nattemp, nacc, del, 0.5_dp)
+        call adjust(nattemp, nacc, del, 0.35_dp)
         
         if (mod(i, 1000) == 0) then
             write(u, '(2f15.7)') i*1._dp, ener/np
