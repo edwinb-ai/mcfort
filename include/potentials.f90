@@ -16,7 +16,7 @@ real(dp), parameter, private :: bpot = (dlr/dla)**(1.0_dp/(dlr-dla))
 ! Intrinsic parameters for the composition of square well, hard sphere, square
 ! shoulder potential
 real(dp), parameter :: eps1 = -1.0_dp
-real(dp), parameter :: eps2 = 0.0_dp
+real(dp), parameter :: eps2 = 0.25_dp
 real(dp), parameter :: eps3 = 0.0_dp
 real(dp), parameter :: k1 = 1000.0_dp
 real(dp), parameter :: delta1 = pi / k1
@@ -24,7 +24,7 @@ real(dp), parameter :: k2 = 1000.0_dp
 real(dp), parameter :: delta2 =pi / k2
 real(dp), parameter :: kappa = 1000000.0_dp
 real(dp), parameter :: lambda1 = 1.15_dp
-real(dp), parameter :: lambda2 = 0.0_dp
+real(dp), parameter :: lambda2 = 1.25_dp
 real(dp), parameter :: lambda3 = 0.0_dp
 real(dp), parameter :: Asw = lambda1 - 0.5 * delta1
 real(dp), parameter :: Ass = lambda2 - 0.5 * delta2
