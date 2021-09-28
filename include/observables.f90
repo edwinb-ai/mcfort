@@ -30,7 +30,7 @@ contains
 
             nbin = int(rij/dr) + 1
             if (nbin <= mr) then
-                g(nbin) = g(nbin)+2._dp
+                g(nbin) = g(nbin)+2.0_dp
             end if
         end do
     end do
