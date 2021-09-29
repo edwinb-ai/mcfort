@@ -85,7 +85,7 @@ program main
             write(u, '(2f15.7)') i*1._dp, ener/np
         end if
         
-        if (mod(i, 500000) == 0) then
+        if (mod(i, 1000000) == 0) then
             print*, 'MC Step, Particle disp, Energy / N'
             print*, i, del, ener/np
         end if
