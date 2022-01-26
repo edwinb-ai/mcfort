@@ -4,6 +4,7 @@ program main
     use utils
     use energies
     use movement
+    use, intrinsic :: iso_fortran_env, only: output_unit
 
     implicit none
 
@@ -15,13 +16,14 @@ program main
     integer :: nattemp = 0
     integer :: nacc = 1, nacco, nav, i, j, ncq = 0
     integer :: ng = 0, naveg = 0
-    integer, parameter :: limT = 1e8
+    integer, parameter :: limT = 2e7
     integer :: limG, u
     ! Condiciones periódicas a la frontera
     integer :: pbc = 1
 
     ! Inicializar el RNG
     call random_seed()
+
     ! Read an input file that contains all the necessary information
     call parse_input('input.in', limG)
     ! Update the simulation parameters with this information
@@ -50,7 +52,7 @@ program main
 
     ! Randomly initialize the q-vectors
     allocate( qx(mr, nvq), qy(mr, nvq), qz(mr, nvq) )
-    open(newunit=u, file = 'qvectors.dat', status = 'unknown')
+    open(newunit=u, file='qvectors.dat', status='unknown')
     do i = 1, mr
         do j = 1, nvq
             call random_number(rng)
@@ -65,7 +67,7 @@ program main
             ncq = ncq + 1
             qs = norm2([qx(i,j), qy(i,j), qz(i,j)])
 
-            write(u, '(2f15.7)') real(ncq), qs
+            write(unit=u, fmt='(2f15.7)') real(ncq, dp), qs
         end do
     end do
     close(u)
@@ -77,27 +79,27 @@ program main
     print*, 'E/N for the initial configuration:', ener/np
 
     ! MC cycle to thermalize the system
-    open(newunit=u, file = 'energy.dat', status = 'unknown')
+    open(newunit=u, file='energy.dat', status='unknown')
     do i = 1, limT
         call mcmove(x, y, z, ener, nattemp, nacc, del)
         call adjust(nattemp, nacc, del, 0.35_dp)
         
         if (mod(i, 1000) == 0) then
-            write(u, '(2f15.7)') i*1._dp, ener/np
+            write(unit=u, fmt='(2f15.7)') real(i, dp), ener/np
         end if
         
         if (mod(i, 1000000) == 0) then
-            print*, 'MC Step, Particle disp, Energy / N'
-            print*, i, del, ener/np
+            write(unit=output_unit, fmt='(a)') 'MC Step, Particle disp, Energy / N'
+            write(unit=output_unit, fmt='(3f14.10)') real(i, dp), del, ener/np
         end if
     end do
 
     print*, 'The system has thermalized'
     close(u)
     ! write the final configuration and the energy
-    open(newunit=u, file = 'finalconf.dat', status = 'unknown')
+    open(newunit=u, file='finalconf.dat', status='unknown')
     do i = 1, np
-        write(u, '(3f15.7)') x(i), y(i), z(i)
+        write(unit=u, fmt='(3f15.7)') x(i), y(i), z(i)
     end do
     close(u)
 
@@ -110,33 +112,31 @@ program main
         call adjust(nattemp, nacc, del, 0.35_dp)
 
         if (mod(i, 2500) == 0) then
-            print*, i, 'calculating g(r) and S(q)'
-            print*, 'MC Step, Particle disp, Energy / N'
-            print*, i, del, ener/np
+            write(unit=output_unit, fmt='(a)') 'calculating g(r) and S(q)'
+            write(unit=output_unit, fmt='(a)') 'MC Step, Particle disp, Energy / N'
+            write(unit=output_unit, fmt='(3f14.10)') real(i, dp), del, ener/np
         end if
     end do
 
-    nav = nacc-nacco
-
-    print*,'Average number for energy: ', nav
-    print*,'Average number for g(r): ', naveg
+    ! True value for averaging
+    nav = nacc - nacco
 
     ! This is the radial distribution function
-    open(newunit=u, file = 'gr.dat', status = 'unknown')
+    open(newunit=u, file='gr.dat', status='unknown')
     do i = 2, mr
         r(i) = (i-1)*dr
         dv = (4.0_dp * pi * r(i)**2 * dr) * rho
         g(i) = g(i) / (np*naveg*dv)
-        write(u, '(2f15.8)') r(i), g(i)
+        write(unit=u, fmt='(2f15.8)') r(i), g(i)
     end do
     close(u)
 
     ! This is the structure factor from the definition
-    open(newunit=u, file = 'sq.dat', status = 'unknown')
+    open(newunit=u, file='sq.dat', status='unknown')
     do i = 3, mr
         s(i) = s(i) / naveg
         if (q(i) < 40.0_dp) then
-            write(u, '(2f15.7)') q(i), s(i)
+            write(unit=u, fmt='(2f15.7)') q(i), s(i)
         end if
     end do
     close(u)
