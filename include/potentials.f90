@@ -77,7 +77,7 @@ contains
 
         if (rij < bpot) then
             uij = (a2/dT)*((1.0_dp/rij)**dlr-(1.0_dp/rij)**dla)
-            uij = uij + 1.0_dp/dT
+            uij = uij + (1.0_dp / dT)
         else
             uij = 0.0_dp
         end if

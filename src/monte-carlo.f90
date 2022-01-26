@@ -27,7 +27,6 @@ program main
     ! Read an input file that contains all the necessary information
     call parse_input('input.in', limG)
     ! Update the simulation parameters with this information
-    rho = 6.0_dp * real(phi) / pi
     boxl = (np / rho)**(1.0_dp/3.0_dp)
     ! rc = boxl * 0.5_dp
     rc= 3.0_dp
@@ -39,7 +38,7 @@ program main
     print*, 'dr = ', dr
     print*, 'dq = ', dq, 'boxl =', boxl
     print*, 'Mean interparticle distance: ', d
-    print*, rho, phi
+    print*, rho
 
     ! Allocate memory for arrays
     allocate(x(np), y(np), z(np))

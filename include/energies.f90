@@ -12,6 +12,7 @@ module energies
 contains
     ! This configuration calculates the energy of a given configuration
     subroutine energy(x, y, z, ener)
+        ! Input variables
         real(dp), intent(in) :: x(:), y(:), z(:)
         real(dp), intent(out) :: ener
 
@@ -19,6 +20,7 @@ contains
         integer :: i, j
         real(dp) :: rij, xij, yij, zij, uij
         
+        ! Variable initialization
         ener = 0.0_dp
 
         !$omp parallel default(shared) private(i,j,uij,xij,yij,zij,rij)
@@ -28,9 +30,9 @@ contains
                 if (i == j) cycle
                 uij = 0.0_dp
 
-                xij = x(j)-x(i)
-                yij = y(j)-y(i)
-                zij = z(j)-z(i)
+                xij = x(j) - x(i)
+                yij = y(j) - y(i)
+                zij = z(j) - z(i)
 
                 ! Minimum image convention
                 xij = xij-boxl*nint(xij/boxl)
@@ -40,7 +42,7 @@ contains
                 rij = norm2([xij, yij, zij])
 
                 if (rij < rc) then
-                    call lennardjones(rij, uij)
+                    call pseudohs(rij, uij)
                     ener = ener + uij
                 end if
             end do
@@ -53,14 +55,17 @@ contains
 
     ! This subroutine calculates the difference in energy when a particle is displaced
     subroutine denergy(x, y, z, no, dener)
+        ! Input variables
         real(dp), intent(in) :: x(:), y(:), z(:)
         real(dp), intent(out) :: dener
         integer, intent(in) :: no
+
         ! Local variables
         integer :: i
         real(dp) :: rij, xij, yij, zij, uij
 
-        dener = 0.0_dp ! initializing
+        ! Variable initialization
+        dener = 0.0_dp
 
         !$omp parallel do default(shared) private(i,xij,yij,zij,rij,uij) &
         !$omp reduction(+:dener)
@@ -79,7 +84,7 @@ contains
             rij = norm2([xij, yij, zij])
 
             if (rij < rc) then
-                call lennardjones(rij, uij)
+                call pseudohs(rij, uij)
                 dener = dener + uij
             end if
         end do

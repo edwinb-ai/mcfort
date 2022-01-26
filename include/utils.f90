@@ -50,7 +50,7 @@ contains
 
         open(newunit=u, file=filein, status='old')
         ! Leer todas las variables
-        read(u, *) phi
+        read(u, *) rho
         read(u, *) ktemp
         read(u, *) np
         read(u, *) nvq
