@@ -28,8 +28,8 @@ program main
     call parse_input('input.in', limG)
     ! Update the simulation parameters with this information
     boxl = (np / rho)**(1.0_dp/3.0_dp)
-    ! rc = boxl * 0.5_dp
-    rc= 3.0_dp
+    rc = boxl * 0.5_dp
+    ! rc= 3.0_dp
     d = (1.0_dp/rho)**(1.0_dp/3.0_dp)
     dr = rc / mr
     dq = pi / rc
@@ -84,12 +84,12 @@ program main
         call adjust(nattemp, nacc, del, 0.35_dp)
         
         if (mod(i, 1000) == 0) then
-            write(unit=u, fmt='(2f15.7)') real(i, dp), ener/np
+            write(unit=u, fmt='(2f15.10)') i, ener/np
         end if
         
         if (mod(i, 1000000) == 0) then
             write(unit=output_unit, fmt='(a)') 'MC Step, Particle disp, Energy / N'
-            write(unit=output_unit, fmt='(3f14.10)') real(i, dp), del, ener/np
+            print*, i, del, ener/np
         end if
     end do
 
@@ -110,10 +110,10 @@ program main
         call average(x, y, z, g, s, ener, nattemp, nacc, ng, naveg, del, dr, pbc)
         call adjust(nattemp, nacc, del, 0.35_dp)
 
-        if (mod(i, 2500) == 0) then
+        if (mod(i, 200000) == 0) then
             write(unit=output_unit, fmt='(a)') 'calculating g(r) and S(q)'
             write(unit=output_unit, fmt='(a)') 'MC Step, Particle disp, Energy / N'
-            write(unit=output_unit, fmt='(3f14.10)') real(i, dp), del, ener/np
+            print*, i, del, ener/np
         end if
     end do
 
