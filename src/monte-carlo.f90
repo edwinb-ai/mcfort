@@ -83,8 +83,8 @@ program main
         call mcmove(x, y, z, ener, nattemp, nacc, del)
         call adjust(nattemp, nacc, del, 0.35_dp)
         
-        if (mod(i, 1000) == 0) then
-            write(unit=u, fmt='(2f15.10)') i, ener/np
+        if (mod(i, 100000) == 0) then
+            write(unit=u, fmt='(i15.10,f15.10)') i, ener/real(np,dp)
         end if
         
         if (mod(i, 1000000) == 0) then
