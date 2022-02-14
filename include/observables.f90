@@ -21,9 +21,8 @@ contains
     gbins = 0.0_dp
 
     !$omp do
-    do i = 1, np
-        do j = 1, np
-            if (i == j) cycle
+    do i = 1, (np - 1)
+        do j = (i + 1), np
             xij = x(j)-x(i)
             yij = y(j)-y(i)
             zij = z(j)-z(i)
@@ -42,7 +41,7 @@ contains
     
     !$omp critical
     do i = 1, mr
-        g(i) = g(i) + (gbins(i) / 2.0_dp)
+        g(i) = g(i) + gbins(i)
     end do
     !$omp end critical
 
