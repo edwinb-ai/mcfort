@@ -56,6 +56,7 @@ contains
         read(u, *) nvq
         read(u, *) mr
         read(u, *) limg
+        read(u, *) stfac
         close(u)
         
     end subroutine parse_input

@@ -4,6 +4,7 @@ program main
     use utils
     use energies
     use movement
+    use observables
     use, intrinsic :: iso_fortran_env, only: output_unit
 
     implicit none
@@ -12,9 +13,8 @@ program main
     real(dp), allocatable :: x(:), y(:), z(:)
     real(dp), allocatable :: r(:), g(:), q(:), s(:)
     real(dp), allocatable :: qx(:, :), qy(:, :), qz(:, :)
-    real(dp) :: del, ener, dv, dt2, dphi, qs
-    real(dp) :: rng, d, dr, dq
-    integer :: nacc, i, j, ncq, nattemp, avefreq
+    real(dp) :: del, ener, d, dr, dq
+    integer :: nacc, i, ncq, nattemp, avefreq
     integer :: limT, limG, u, ng, naveg
 
     ! PRNG initialization
@@ -26,10 +26,10 @@ program main
     ! Update the simulation parameters with this information
     boxl = (np / rho)**(1.0_dp/3.0_dp)
     rc = boxl * 0.5_dp
-    d = (1.0_dp/rho)**(1.0_dp/3.0_dp)
+    d = (1.0_dp/rho)**(1.0_dp/3.0_dp) ! Interparticle distance
     dr = rc / mr
     dq = pi / rc
-    limT = 1e8 ! Thermalization steps
+    limT = 1e7 ! Thermalization steps
     ng = 0
     naveg = 0
     ncq = 0
@@ -54,8 +54,8 @@ program main
     print*, rho
 
     ! Gives values to q vector
-    if (stfac == .true.) then
-        init_sq(q, qx, qy, qz, 'qvectors.dat')
+    if (stfac .eqv. .true.) then
+        call init_sq(q, qx, qy, qz, dq, 'qvectors.dat')
     end if
 
     ! initial configuration and initial energy
@@ -100,32 +100,22 @@ program main
             write(unit=output_unit, fmt='(a)') 'MC Step, Particle disp, Energy / N'
             print*, i, del, ener/np
             ! Accumulation step for the RDF
-            call rdf(x, y, z, dr, g, pbc)
+            call rdf(x, y, z, dr, g)
             ! Accumulation step for the structure factor
-            ! call sq(x, y, z, s, pbc)
+            if (stfac .eqv. .true.) then
+                call sq(x, y, z, qx, qy, qz, s)
+            end if
         end if
     end do
 
-    ! This is the radial distribution function
-    open(newunit=u, file='gr.dat', status='unknown')
-    do i = 2, mr
-        r(i) = (i-1)*dr
-        dv = (4.0_dp * pi * r(i)*r(i) * dr) * rho
-        g(i) = g(i) / (np*naveg*dv)
-        write(unit=u, fmt='(2f15.8)') r(i), g(i)
-    end do
-    close(u)
+    ! Normalize the RDF
+    call normalize_gr(g, r, dr, naveg, 'gr.dat')
 
-    ! This is the structure factor from the definition
-    ! open(newunit=u, file='sq.dat', status='unknown')
-    ! do i = 3, mr
-    !     s(i) = s(i) / naveg
-    !     if (q(i) < 40.0_dp) then
-    !         write(unit=u, fmt='(2f15.7)') q(i), s(i)
-    !     end if
-    ! end do
-    ! close(u)
-
-    deallocate(x, y, z, r, g, s, q)
+    ! Normalize the structure factor
+    if (stfac .eqv. .true.) then
+        call normalize_sq(s, q, naveg, 'sq.dat')
+    end if
+    
+    deallocate(x, y, z, r, g, s, q, qx, qy, qz)
 
 end program main

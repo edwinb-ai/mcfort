@@ -4,14 +4,13 @@ module observables
     use omp_lib
     implicit none
     save
-    public rdf, sq, init_sq
+    public rdf, sq, init_sq, normalize_sq, normalize_gr
 contains
     ! This subroutine calculates the pair potential between particles i & j
-    subroutine rdf(x, y, z, dr, g, pbc)
+    subroutine rdf(x, y, z, dr, g)
     real(dp), intent(in) :: x(:), y(:), z(:)
     real(dp), intent(inout) :: g(:)
     real(dp), intent(in) :: dr
-    integer, intent(in) :: pbc
 
     ! Local variables
     integer :: i, j, nbin
@@ -25,11 +24,9 @@ contains
             xij = x(j)-x(i)
             yij = y(j)-y(i)
             zij = z(j)-z(i)
-            if (pbc == 1) then
-                xij = xij - boxl*nint(xij/boxl)
-                yij = yij - boxl*nint(yij/boxl)
-                zij = zij - boxl*nint(zij/boxl)
-            end if
+            xij = xij - boxl*nint(xij/boxl)
+            yij = yij - boxl*nint(yij/boxl)
+            zij = zij - boxl*nint(zij/boxl)
             rij = norm2([xij, yij, zij])
 
             nbin = nint(rij/dr) + 1
@@ -47,10 +44,37 @@ contains
     !$omp end critical
     end subroutine rdf ! out g
 
-    subroutine init_sq(q, qx, qy, qz, filein)
+    subroutine normalize_gr(g, r, dr, naveg, filein)
+    !! Arguments
     character(len=*), intent(in) :: filein
+    integer, intent(in) :: naveg
+    real(dp), intent(in) :: dr
+    real(dp), intent(inout) :: g(:), r(:)
+    !! Local variables
+    integer :: u, i
+    real(dp) :: dv
+
+    open(newunit=u, file=filein, status='unknown')
+    do i = 2, mr
+        r(i) = (i-1)*dr
+        dv = (4.0_dp * pi * r(i)*r(i) * dr) * rho
+        g(i) = g(i) / (np*naveg*dv)
+        write(unit=u, fmt='(2f15.8)') r(i), g(i)
+    end do
+    close(u)
+    end subroutine normalize_gr
+    
+    subroutine init_sq(q, qx, qy, qz, dq, filein)
+    !! Arguments
+    character(len=*), intent(in) :: filein
+    real(dp), intent(in) :: dq
     real(dp), intent(inout) :: q(:)
     real(dp), intent(inout) :: qx(:,:), qy(:,:), qz(:,:)
+
+    !! Local variables
+    real(dp) :: dphi, qs, dt2, rng
+    integer :: i, j, ncq, u
+    ncq = 0
 
     open(newunit=u, file=filein, status='unknown')
 
@@ -63,7 +87,7 @@ contains
     do i = 1, mr
         do j = 1, nvq
             call random_number(rng)
-            dt2 = pi*rng
+            dt2 = pi * rng
             call random_number(rng)
             dphi = 2.0_dp * pi * rng
 
@@ -80,9 +104,9 @@ contains
     close(u)
     end subroutine init_sq
 
-    subroutine sq(x, y, z, s, pbc)
+    subroutine sq(x, y, z, qx, qy, qz, s)
     real(dp), intent(in) :: x(:), y(:), z(:)
-    integer, intent(in) :: pbc
+    real(dp), intent(in) :: qx(:,:), qy(:,:), qz(:,:)
     real(dp), intent(inout) :: s(:)
     
     ! Local variables
@@ -96,15 +120,9 @@ contains
 
         parti = 0.0_dp
         do k = 1, np
-            if (pbc == 1) then
-                xaux = x(k)-boxl*nint(x(k)/boxl)
-                yaux = y(k)-boxl*nint(y(k)/boxl)
-                zaux = z(k)-boxl*nint(z(k)/boxl)
-            else
-                xaux = x(k)
-                yaux = y(k)
-                zaux = z(k)
-            end if
+            xaux = x(k)-boxl*nint(x(k)/boxl)
+            yaux = y(k)-boxl*nint(y(k)/boxl)
+            zaux = z(k)-boxl*nint(z(k)/boxl)
             rij = norm2([xaux, yaux, zaux])
 
             if (rij < rc) then
@@ -127,4 +145,24 @@ contains
         s(i) = s(i) + auxsq
     end do
     end subroutine sq
+
+    subroutine normalize_sq(s, q, naveg, filein)
+    !! Arguments
+    character(len=*), intent(in) :: filein
+    integer, intent(in) :: naveg
+    real(dp), intent(inout) :: s(:), q(:)
+    !! Local variables
+    integer :: u, i
+
+    !! This is the structure factor from the definition
+    open(newunit=u, file=filein, status='unknown')
+    do i = 3, mr
+        s(i) = s(i) / naveg
+        if (q(i) < 40.0_dp) then
+            write(unit=u, fmt='(2f15.7)') q(i), s(i)
+        end if
+    end do
+    close(u)
+    end subroutine normalize_sq
+
 end module observables
