@@ -41,21 +41,23 @@ contains
         end do
     end subroutine iniconfig ! note that the out is x, y, z vector
 
-    subroutine parse_input(filein, limg)
+    subroutine parse_input(filein, limg, limt)
         character(len = *), intent(in) :: filein
-        integer, intent(inout) :: limg
+        integer, intent(inout) :: limg, limt
 
-        ! Variables locales
+        !! Local variables
         integer :: u
 
         open(newunit=u, file=filein, status='old')
-        ! Leer todas las variables
-        read(u, *) rho
-        read(u, *) ktemp
-        read(u, *) np
-        read(u, *) nvq
-        read(u, *) mr
-        read(u, *) limg
+        !! Read the inputs from the file
+        read(u, *) rho ! Density
+        read(u, *) ktemp ! Absolute temperature
+        read(u, *) np ! Total number of particles
+        read(u, *) nvq ! Total number of q-vectors
+        read(u, *) mr ! Bin size for the RDF and structure factor
+        read(u, *) limt ! Thermalization steps
+        read(u, *) limg ! Averaging steps
+        read(u, *) stfac ! Whether to compute the structure factor or not
         close(u)
         
     end subroutine parse_input
