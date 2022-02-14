@@ -105,6 +105,8 @@ program main
         end if
     end do
 
+    write(unit=output_unit, fmt='(a)') 'Accumulation finalized, averaging now...'
+
     ! Normalize the RDF
     call normalize_gr(g, r, dr, naveg, 'gr.dat')
 
@@ -114,5 +116,7 @@ program main
     end if
     
     deallocate(x, y, z, r, g, s, q, qx, qy, qz)
+
+    write(unit=output_unit, fmt='(a)') 'Program finished.'
 
 end program main
