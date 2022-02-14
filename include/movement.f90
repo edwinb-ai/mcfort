@@ -6,7 +6,7 @@ module movement
 
     implicit none
 
-    public mcmove, adjust, average
+    public mcmove, adjust
 contains
     ! This subroutine displace the system to a new configuration
     subroutine mcmove(x, y, z, ener, nattemp, nacc, del)
@@ -25,9 +25,9 @@ contains
 
     call random_number(rng)
     no = int(rng*np)+1
-    call denergy(x, y, z, no, enero) !intruduzco el valor de energia de conf inicial
+    call denergy(x, y, z, no, enero)
 
-    xo = x(no) !coordenadas de de la particula aleatoriamente escogida
+    xo = x(no)
     yo = y(no)
     zo = z(no)
 
@@ -39,17 +39,17 @@ contains
     z(no) = z(no)+(rng-0.5_dp)*del
 
     ! periodic boundary conditions
-    x(no) = x(no)-boxl*dnint(x(no)/boxl)
-    y(no) = y(no)-boxl*dnint(y(no)/boxl)
-    z(no) = z(no)-boxl*dnint(z(no)/boxl)
+    x(no) = x(no)-boxl*nint(x(no)/boxl)
+    y(no) = y(no)-boxl*nint(y(no)/boxl)
+    z(no) = z(no)-boxl*nint(z(no)/boxl)
 
     call denergy(x, y, z, no, enern)
 
-    dener = enern-enero
+    dener = enern - enero
     call random_number(rng)
     if (rng < exp(-dener / ktemp)) then
-        ener = ener+dener
-        nacc = nacc+1
+        ener = ener + dener
+        nacc = nacc + 1
     else
         x(no) = xo
         y(no) = yo

@@ -10,5 +10,4 @@ module parameters
     ! User dependant parameters
     real(dp) :: rho, boxl, rc, ktemp
     integer :: np, nvq, mr
-    real(dp), allocatable :: qx(:, :), qy(:, :), qz(:, :)
 end module parameters
