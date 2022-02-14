@@ -22,14 +22,13 @@ program main
 
     !! Scalar variable initialization
     ! Read an input file that contains all the necessary information
-    call parse_input('input.in', limG)
+    call parse_input('input.in', limG, limT)
     ! Update the simulation parameters with this information
     boxl = (np / rho)**(1.0_dp/3.0_dp)
     rc = boxl * 0.5_dp
     d = (1.0_dp/rho)**(1.0_dp/3.0_dp) ! Interparticle distance
     dr = rc / mr
     dq = pi / rc
-    limT = 1e7 ! Thermalization steps
     ng = 0
     naveg = 0
     ncq = 0
