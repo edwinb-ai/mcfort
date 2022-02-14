@@ -35,7 +35,7 @@ program main
     nacc = 1
     nattemp = 0
     del = 0.1_dp ! Particle displacement
-    avefreq = 10000 ! Average frequency
+    avefreq = 1000 ! Average frequency
 
     !! Array initialization
     ! Allocate memory for arrays
