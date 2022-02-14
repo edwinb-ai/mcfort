@@ -17,7 +17,10 @@ contains
     real(dp) :: rij, xij, yij, zij
     real(dp) :: gbins(mr)
 
-    !$omp parallel do default(shared) private(i,j,xij,yij,zij,rij,nbin,gbins)
+    !$omp parallel default(shared) private(i,j,xij,yij,zij,rij,nbin,gbins)
+    gbins = 0.0_dp
+
+    !$omp do
     do i = 1, np
         do j = 1, np
             if (i == j) cycle
@@ -35,13 +38,15 @@ contains
             end if
         end do
     end do
-    !$omp end parallel do
-
+    !$omp end do
+    
     !$omp critical
     do i = 1, mr
-        g(i) = g(i) + gbins(i)
+        g(i) = g(i) + (gbins(i) / 2.0_dp)
     end do
     !$omp end critical
+
+    !$omp end parallel
     end subroutine rdf ! out g
 
     subroutine normalize_gr(g, r, dr, naveg, filein)

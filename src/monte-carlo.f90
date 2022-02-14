@@ -96,9 +96,6 @@ program main
 
         if (mod(i, avefreq) == 0) then
             naveg = naveg + 1
-            write(unit=output_unit, fmt='(a)') 'calculating g(r) and S(q)'
-            write(unit=output_unit, fmt='(a)') 'MC Step, Particle disp, Energy / N'
-            print*, i, del, ener/np
             ! Accumulation step for the RDF
             call rdf(x, y, z, dr, g)
             ! Accumulation step for the structure factor
