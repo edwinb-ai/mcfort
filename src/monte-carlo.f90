@@ -101,7 +101,7 @@ program main
                 ! Accumulation step for the RDF
                 call rdf(x, y, z, dr, g)
                 ! Accumulation step for the structure factor
-                if (stfac .eqv. .true.) then
+                if (stfac) then
                     call sq(x, y, z, qx, qy, qz, s)
                 end if
             end if
@@ -114,7 +114,7 @@ program main
     call normalize_gr(g, r, dr, naveg, 'gr.dat')
 
     ! Normalize the structure factor
-    if (stfac .eqv. .true.) then
+    if (stfac) then
         call normalize_sq(s, q, naveg, 'sq.dat')
     end if
     
