@@ -3,7 +3,7 @@ module energies
     use types
     use parameters
     use potentials
-    use omp_lib
+    ! use omp_lib
     
     implicit none
     
@@ -23,8 +23,8 @@ contains
         ! Variable initialization
         ener = 0.0_dp
 
-        !$omp parallel default(shared) private(i,j,uij,xij,yij,zij,rij)
-        !$omp do reduction(+:ener)
+        !! !$omp parallel default(shared) private(i,j,uij,xij,yij,zij,rij)
+        !! !$omp do reduction(+:ener)
         do i = 1, (np - 1)
             do j = (i + 1), np
                 uij = 0.0_dp
@@ -40,13 +40,13 @@ contains
                 rij = norm2([xij, yij, zij])
 
                 if (rij < rc) then
-                    call pseudohs(rij, uij)
+                    call square_well(rij, uij)
                     ener = ener + uij
                 end if
             end do
         end do
-        !$omp end do
-        !$omp end parallel
+        !! !$omp end do
+        !! !$omp end parallel
     end subroutine energy
 
     ! This subroutine calculates the difference in energy when a particle is displaced
@@ -63,8 +63,8 @@ contains
         ! Variable initialization
         dener = 0.0_dp
 
-        !$omp parallel do default(shared) private(i,xij,yij,zij,rij,uij) &
-        !$omp reduction(+:dener)
+        !! !$omp parallel do default(shared) private(i,xij,yij,zij,rij,uij) &
+        !! !$omp reduction(+:dener)
         do i = 1, np
             if ( i == no ) cycle
 
@@ -80,10 +80,10 @@ contains
             rij = norm2([xij, yij, zij])
 
             if (rij < rc) then
-                call pseudohs(rij, uij)
+                call square_well(rij, uij)
                 dener = dener + uij
             end if
         end do
-        !$omp end parallel do
+        !! !$omp end parallel do
     end subroutine denergy
 end module energies

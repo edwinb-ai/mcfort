@@ -14,7 +14,7 @@ program main
     real(dp), allocatable :: r(:), g(:), q(:), s(:)
     real(dp), allocatable :: qx(:, :), qy(:, :), qz(:, :)
     real(dp) :: del, ener, d, dr, dq
-    integer :: nacc, i, ncq, nattemp, avefreq
+    integer :: nacc, i, j, ncq, nattemp, avefreq
     integer :: limT, limG, u, ng, naveg
 
     ! PRNG initialization
@@ -66,16 +66,19 @@ program main
     ! MC cycle to thermalize the system
     open(newunit=u, file='energy.dat', status='unknown')
     do i = 1, limT
-        call mcmove(x, y, z, ener, nattemp, nacc, del)
-        call adjust(nattemp, nacc, del, 0.35_dp)
-        
-        if (mod(i, 100000) == 0) then
+        do j = 1, np
+            call mcmove(x, y, z, ener, nattemp, nacc, del)
+            if (mod(i, 10) == 0) then
+                call adjust(nattemp, nacc, del, 0.4_dp)
+            end if
+        end do
+        if (mod(i, 1000) == 0) then
             write(unit=u, fmt='(i15.10,f15.10)') i, ener/real(np,dp)
         end if
         
-        if (mod(i, 1000000) == 0) then
-            write(unit=output_unit, fmt='(a)') 'MC Step, Particle disp, Energy / N'
-            print*, i, del, ener/np
+        if (mod(i, 1000) == 0) then
+            write(unit=output_unit, fmt='(a)') 'MC Step, Particle disp, Energy / N, Ratio'
+            print*, i, del, ener/real(np,dp), real(nacc,dp)/real(nattemp,dp)
         end if
     end do
 
@@ -90,18 +93,19 @@ program main
 
     !MC cycle to calculate the g(r)
     do i = 1, limG
-        call mcmove(x, y, z, ener, nattemp, nacc, del)
-        call adjust(nattemp, nacc, del, 0.35_dp)
+        do j = 1, np
+            call mcmove(x, y, z, ener, nattemp, nacc, del)
 
-        if (mod(i, avefreq) == 0) then
-            naveg = naveg + 1
-            ! Accumulation step for the RDF
-            call rdf(x, y, z, dr, g)
-            ! Accumulation step for the structure factor
-            if (stfac .eqv. .true.) then
-                call sq(x, y, z, qx, qy, qz, s)
+            if (mod(i, avefreq) == 0) then
+                naveg = naveg + 1
+                ! Accumulation step for the RDF
+                call rdf(x, y, z, dr, g)
+                ! Accumulation step for the structure factor
+                if (stfac .eqv. .true.) then
+                    call sq(x, y, z, qx, qy, qz, s)
+                end if
             end if
-        end if
+        end do
     end do
 
     write(unit=output_unit, fmt='(a)') 'Accumulation finalized, averaging now...'

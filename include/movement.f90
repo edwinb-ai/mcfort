@@ -61,15 +61,18 @@ contains
         real(dp), intent(in) :: tol
         real(dp), intent(inout) :: del
         ! Local variables
-        real(dp) :: ratio
+        real(dp) :: ratio, half_box
 
-        if (mod(nattemp, nacc) == 0) then
-            ratio = real(nacc, dp)/real(nattemp, dp)
-            if (ratio > tol) then
-                del = del*1.05_dp
-            else
-                del = del*0.95_dp
-            end if
+        ratio = real(nacc, dp)/real(nattemp, dp)
+        if (ratio > tol) then
+            del = del*1.05_dp
+        else
+            del = del*0.95_dp
+        end if
+
+        half_box = boxl * 0.5_dp
+        if (del > half_box) then
+            del = half_box
         end if
     end subroutine adjust
 end module movement
